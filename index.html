@@ -26,7 +26,7 @@
       width: 100%;
       height: 100%;
       border: 2px solid #e91e63;
-      cursor: crosshair;
+      touch-action: none;
     }
     #hiddenLayer {
       z-index: 1;
@@ -78,57 +78,80 @@
     const hiddenCtx = hiddenCanvas.getContext('2d');
     const coverCtx = coverCanvas.getContext('2d');
 
-    // Ajustar tamaño del canvas
-    hiddenCanvas.width = coverCanvas.width = coverCanvas.offsetWidth;
-    hiddenCanvas.height = coverCanvas.height = coverCanvas.offsetHeight;
+    // Ajuste de tamaño dinámico
+    function resizeCanvas() {
+      const width = coverCanvas.offsetWidth;
+      const height = coverCanvas.offsetHeight;
+      hiddenCanvas.width = coverCanvas.width = width;
+      hiddenCanvas.height = coverCanvas.height = height;
 
-    const width = hiddenCanvas.width;
-    const height = hiddenCanvas.height;
+      // Redibujar capa oculta
+      hiddenCtx.fillStyle = "#fff";
+      hiddenCtx.fillRect(0, 0, width, height);
+      hiddenCtx.font = "bold 1rem Arial";
+      hiddenCtx.fillStyle = "#d81b60";
+      hiddenCtx.textAlign = "center";
+      hiddenCtx.fillText("🎁 Cupón gratis ilimitado 🎁", width / 2, height / 2 - 10);
+      hiddenCtx.fillStyle = "#25D366";
+      hiddenCtx.fillRect(width / 2 - 50, height / 2 + 10, 100, 30);
+      hiddenCtx.fillStyle = "#fff";
+      hiddenCtx.font = "14px Arial";
+      hiddenCtx.fillText("Canjear", width / 2, height / 2 + 30);
 
-    // Mensaje y botón en capa inferior
-    hiddenCtx.fillStyle = "#fff";
-    hiddenCtx.fillRect(0, 0, width, height);
-    hiddenCtx.font = "bold 1rem Arial";
-    hiddenCtx.fillStyle = "#d81b60";
-    hiddenCtx.textAlign = "center";
-    hiddenCtx.fillText("🎁 Cupón gratis ilimitado 🎁", width / 2, height / 2 - 10);
-    hiddenCtx.fillStyle = "#25D366";
-    hiddenCtx.fillRect(width / 2 - 50, height / 2 + 10, 100, 30);
-    hiddenCtx.fillStyle = "#fff";
-    hiddenCtx.font = "14px Arial";
-    hiddenCtx.fillText("Canjear", width / 2, height / 2 + 30);
+      // Capa gris raspable
+      coverCtx.fillStyle = "#999";
+      coverCtx.fillRect(0, 0, width, height);
+    }
 
-    // Capa gris raspable
-    coverCtx.fillStyle = "#999";
-    coverCtx.fillRect(0, 0, width, height);
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
-    let totalPixels = width * height;
-    coverCanvas.addEventListener("mousemove", function(e) {
-      if (e.buttons !== 1) return;
-      const rect = coverCanvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+    let totalPixels, clearCount = 0;
 
+    function updateProgress() {
+      const pixels = coverCtx.getImageData(0, 0, coverCanvas.width, coverCanvas.height).data;
+      clearCount = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i + 3] === 0) clearCount++;
+      }
+      totalPixels = coverCanvas.width * coverCanvas.height;
+      if (clearCount / totalPixels > 0.2) {
+        mensajeFinal.style.opacity = 1;
+      }
+    }
+
+    function drawAt(x, y) {
       coverCtx.globalCompositeOperation = "destination-out";
       coverCtx.beginPath();
       coverCtx.arc(x, y, 20, 0, Math.PI * 2);
       coverCtx.fill();
+      updateProgress();
+    }
 
-      const pixels = coverCtx.getImageData(0, 0, width, height).data;
-      let clearCount = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i + 3] === 0) clearCount++;
-      }
-      if (clearCount / totalPixels > 0.2) {
-        mensajeFinal.style.opacity = 1;
-      }
+    // Soporte mouse
+    coverCanvas.addEventListener("mousemove", function(e) {
+      if (e.buttons !== 1) return;
+      const rect = coverCanvas.getBoundingClientRect();
+      drawAt(e.clientX - rect.left, e.clientY - rect.top);
     });
+
+    // Soporte touch
+    coverCanvas.addEventListener("touchmove", function(e) {
+      e.preventDefault();
+      const rect = coverCanvas.getBoundingClientRect();
+      for (let touch of e.touches) {
+        drawAt(touch.clientX - rect.left, touch.clientY - rect.top);
+      }
+    }, { passive: false });
 
     // Botón WhatsApp
     coverCanvas.addEventListener("click", (e) => {
       const rect = coverCanvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+
+      const width = coverCanvas.width;
+      const height = coverCanvas.height;
 
       if (x > width / 2 - 50 && x < width / 2 + 50 && y > height / 2 + 10 && y < height / 2 + 40) {
         window.open("https://wa.me/50589679892?text=Cupon%20de%20besos%20y%20abrazos.%20T%C3%BA%20decides%20si%20canjearlo%20ahorita%20o%20cuando%20lo%20desees.%20Es%20ilimitado%20💌", "_blank");
