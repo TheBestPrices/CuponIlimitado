@@ -4,14 +4,20 @@
   <meta charset="UTF-8">
   <title>Raspa y gana</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins&display=swap" rel="stylesheet">
   <style>
     body {
       background: #ffeef4;
-      font-family: sans-serif;
+      font-family: 'Poppins', sans-serif;
       text-align: center;
       padding: 30px;
     }
+
+    h2 {
+      font-size: 1.5rem;
+      color: #d81b60;
+    }
+
     #container {
       position: relative;
       width: 90%;
@@ -19,6 +25,7 @@
       aspect-ratio: 3 / 2;
       margin: 0 auto;
     }
+
     canvas {
       position: absolute;
       top: 0;
@@ -27,13 +34,17 @@
       height: 100%;
       border: 2px solid #e91e63;
       touch-action: none;
+      border-radius: 12px;
     }
+
     #hiddenLayer {
       z-index: 1;
     }
+
     #coverLayer {
       z-index: 2;
     }
+
     #mensajeFinal {
       margin-top: 25px;
       opacity: 0;
@@ -45,13 +56,38 @@
       margin-right: auto;
       color: #d81b60;
     }
+
     .flechitas {
       font-size: 1.6rem;
       animation: flotando 2s infinite alternate ease-in-out;
     }
+
     @keyframes flotando {
       0% { transform: translateY(0); }
       100% { transform: translateY(-6px); }
+    }
+
+    #textoCupón {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #d81b60;
+      font-weight: bold;
+    }
+
+    #botonCanje {
+      background-color: #25D366;
+      color: white;
+      font-size: 16px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    #botonCanje:hover {
+      background-color: #1ebd5c;
     }
   </style>
 </head>
@@ -63,6 +99,9 @@
     <canvas id="hiddenLayer"></canvas>
     <canvas id="coverLayer"></canvas>
   </div>
+
+  <div id="textoCupón">🎁 Cupón gratis ilimitado 🎁</div>
+  <button id="botonCanje" onclick="abrirWhatsApp()">Canjear cupón 💌</button>
 
   <div id="mensajeFinal">
     <div class="flechitas">❤️‍🔥 ❤️‍🔥</div>
@@ -78,27 +117,12 @@
     const hiddenCtx = hiddenCanvas.getContext('2d');
     const coverCtx = coverCanvas.getContext('2d');
 
-    // Ajuste de tamaño dinámico
     function resizeCanvas() {
       const width = coverCanvas.offsetWidth;
       const height = coverCanvas.offsetHeight;
       hiddenCanvas.width = coverCanvas.width = width;
       hiddenCanvas.height = coverCanvas.height = height;
 
-      // Redibujar capa oculta
-      hiddenCtx.fillStyle = "#fff";
-      hiddenCtx.fillRect(0, 0, width, height);
-      hiddenCtx.font = "bold 1rem Arial";
-      hiddenCtx.fillStyle = "#d81b60";
-      hiddenCtx.textAlign = "center";
-      hiddenCtx.fillText("🎁 Cupón gratis ilimitado 🎁", width / 2, height / 2 - 10);
-      hiddenCtx.fillStyle = "#25D366";
-      hiddenCtx.fillRect(width / 2 - 50, height / 2 + 10, 100, 30);
-      hiddenCtx.fillStyle = "#fff";
-      hiddenCtx.font = "14px Arial";
-      hiddenCtx.fillText("Canjear", width / 2, height / 2 + 30);
-
-      // Capa gris raspable
       coverCtx.fillStyle = "#999";
       coverCtx.fillRect(0, 0, width, height);
     }
@@ -128,14 +152,14 @@
       updateProgress();
     }
 
-    // Soporte mouse
+    // Mouse
     coverCanvas.addEventListener("mousemove", function(e) {
       if (e.buttons !== 1) return;
       const rect = coverCanvas.getBoundingClientRect();
       drawAt(e.clientX - rect.left, e.clientY - rect.top);
     });
 
-    // Soporte touch
+    // Touch
     coverCanvas.addEventListener("touchmove", function(e) {
       e.preventDefault();
       const rect = coverCanvas.getBoundingClientRect();
@@ -144,19 +168,9 @@
       }
     }, { passive: false });
 
-    // Botón WhatsApp
-    coverCanvas.addEventListener("click", (e) => {
-      const rect = coverCanvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const width = coverCanvas.width;
-      const height = coverCanvas.height;
-
-      if (x > width / 2 - 50 && x < width / 2 + 50 && y > height / 2 + 10 && y < height / 2 + 40) {
-        window.open("https://wa.me/50589679892?text=Cupon%20de%20besos%20y%20abrazos.%20T%C3%BA%20decides%20si%20canjearlo%20ahorita%20o%20cuando%20lo%20desees.%20Es%20ilimitado%20💌", "_blank");
-      }
-    });
+    function abrirWhatsApp() {
+      window.open("https://wa.me/50589679892?text=Cupon%20de%20besos%20y%20abrazos.%20T%C3%BA%20decides%20si%20canjearlo%20ahorita%20o%20cuando%20lo%20desees.%20Es%20ilimitado%20💌", "_blank");
+    }
   </script>
 
 </body>
