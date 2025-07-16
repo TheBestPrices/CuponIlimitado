@@ -3,24 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>Raspa y gana</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
   <style>
     body {
       background: #ffeef4;
       font-family: sans-serif;
       text-align: center;
-      padding: 50px;
+      padding: 30px;
     }
     #container {
       position: relative;
-      width: 300px;
-      height: 200px;
+      width: 90%;
+      max-width: 350px;
+      aspect-ratio: 3 / 2;
       margin: 0 auto;
     }
     canvas {
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
       border: 2px solid #e91e63;
       cursor: crosshair;
     }
@@ -31,25 +35,22 @@
       z-index: 2;
     }
     #mensajeFinal {
-      margin-top: 30px;
+      margin-top: 25px;
       opacity: 0;
       transition: opacity 2s ease;
       font-family: 'Great Vibes', cursive;
-      font-size: 20px;
-      max-width: 320px;
+      font-size: 1.2rem;
+      max-width: 350px;
       margin-left: auto;
       margin-right: auto;
       color: #d81b60;
-      position: relative;
     }
     .flechitas {
-      font-size: 24px;
+      font-size: 1.6rem;
       animation: flotando 2s infinite alternate ease-in-out;
-      color: #d81b60;
     }
-
     @keyframes flotando {
-      0% { transform: translateY(0px); }
+      0% { transform: translateY(0); }
       100% { transform: translateY(-6px); }
     }
   </style>
@@ -59,8 +60,8 @@
   <h2>🎉 Raspa para descubrir tu regalo 🎉</h2>
 
   <div id="container">
-    <canvas id="hiddenLayer" width="300" height="200"></canvas>
-    <canvas id="coverLayer" width="300" height="200"></canvas>
+    <canvas id="hiddenLayer"></canvas>
+    <canvas id="coverLayer"></canvas>
   </div>
 
   <div id="mensajeFinal">
@@ -71,39 +72,37 @@
 
   <script>
     const hiddenCanvas = document.getElementById('hiddenLayer');
-    const hiddenCtx = hiddenCanvas.getContext('2d');
-
     const coverCanvas = document.getElementById('coverLayer');
-    const coverCtx = coverCanvas.getContext('2d');
-
     const mensajeFinal = document.getElementById('mensajeFinal');
 
+    const hiddenCtx = hiddenCanvas.getContext('2d');
+    const coverCtx = coverCanvas.getContext('2d');
+
+    // Ajustar tamaño del canvas
+    hiddenCanvas.width = coverCanvas.width = coverCanvas.offsetWidth;
+    hiddenCanvas.height = coverCanvas.height = coverCanvas.offsetHeight;
+
+    const width = hiddenCanvas.width;
+    const height = hiddenCanvas.height;
+
+    // Mensaje y botón en capa inferior
     hiddenCtx.fillStyle = "#fff";
-    hiddenCtx.fillRect(0, 0, hiddenCanvas.width, hiddenCanvas.height);
-    hiddenCtx.font = "18px Arial";
+    hiddenCtx.fillRect(0, 0, width, height);
+    hiddenCtx.font = "bold 1rem Arial";
     hiddenCtx.fillStyle = "#d81b60";
     hiddenCtx.textAlign = "center";
-    hiddenCtx.fillText("🎁 Cupón gratis ilimitado 🎁", hiddenCanvas.width / 2, 90);
+    hiddenCtx.fillText("🎁 Cupón gratis ilimitado 🎁", width / 2, height / 2 - 10);
     hiddenCtx.fillStyle = "#25D366";
-    hiddenCtx.fillRect(100, 110, 100, 35);
+    hiddenCtx.fillRect(width / 2 - 50, height / 2 + 10, 100, 30);
     hiddenCtx.fillStyle = "#fff";
-    hiddenCtx.font = "15px Arial";
-    hiddenCtx.fillText("Canjear", hiddenCanvas.width / 2, 133);
+    hiddenCtx.font = "14px Arial";
+    hiddenCtx.fillText("Canjear", width / 2, height / 2 + 30);
 
-    coverCanvas.addEventListener("click", (e) => {
-      const rect = coverCanvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      if (x > 100 && x < 200 && y > 110 && y < 145) {
-        window.open("https://wa.me/50589679892?text=Cupon%20de%20besos%20y%20abrazos.%20T%C3%BA%20decides%20si%20canjearlo%20ahorita%20o%20cuando%20lo%20desees.%20Es%20ilimitado%20💌", "_blank");
-      }
-    });
-
-    let totalPixels = 300 * 200;
+    // Capa gris raspable
     coverCtx.fillStyle = "#999";
-    coverCtx.fillRect(0, 0, coverCanvas.width, coverCanvas.height);
+    coverCtx.fillRect(0, 0, width, height);
 
+    let totalPixels = width * height;
     coverCanvas.addEventListener("mousemove", function(e) {
       if (e.buttons !== 1) return;
       const rect = coverCanvas.getBoundingClientRect();
@@ -112,19 +111,27 @@
 
       coverCtx.globalCompositeOperation = "destination-out";
       coverCtx.beginPath();
-      coverCtx.arc(x, y, 15, 0, Math.PI * 2);
+      coverCtx.arc(x, y, 20, 0, Math.PI * 2);
       coverCtx.fill();
 
-      const pixels = coverCtx.getImageData(0, 0, 300, 200).data;
+      const pixels = coverCtx.getImageData(0, 0, width, height).data;
       let clearCount = 0;
       for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i + 3] === 0) {
-          clearCount++;
-        }
+        if (pixels[i + 3] === 0) clearCount++;
       }
-      let porcentaje = clearCount / totalPixels;
-      if (porcentaje > 0.2) {
+      if (clearCount / totalPixels > 0.2) {
         mensajeFinal.style.opacity = 1;
+      }
+    });
+
+    // Botón WhatsApp
+    coverCanvas.addEventListener("click", (e) => {
+      const rect = coverCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (x > width / 2 - 50 && x < width / 2 + 50 && y > height / 2 + 10 && y < height / 2 + 40) {
+        window.open("https://wa.me/50589679892?text=Cupon%20de%20besos%20y%20abrazos.%20T%C3%BA%20decides%20si%20canjearlo%20ahorita%20o%20cuando%20lo%20desees.%20Es%20ilimitado%20💌", "_blank");
       }
     });
   </script>
